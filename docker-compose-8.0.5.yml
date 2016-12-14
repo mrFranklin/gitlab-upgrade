@@ -1,0 +1,61 @@
+postgresql:
+  image: sameersbn/postgresql:9.4-5
+  environment:
+    - DB_USER=git
+    - DB_PASS=password
+    - DB_NAME=gitlabhq_production
+  ports:
+    - "5432:5432"
+  volumes:
+    - /mnt/docker/gitlab/postgresql:/var/lib/postgresql
+gitlab:
+  image: sameersbn/gitlab:8.0.5-1
+  links:
+    - redis:redisio
+    - postgresql:postgresql
+  ports:
+    - "10080:80"
+    - "10022:22"
+  environment:
+    - TZ=Asia/Shangehai
+    - GITLAB_TIMEZONE=Beijing
+
+    - GITLAB_SECRETS_DB_KEY_BASE=cq4tvjktrcldKTcW4vvXqx5vB57hXlQMNLcKt2GpDZZWV2bJPmZspHq6fdMXdDC3
+
+    - GITLAB_HOST=your.domain.com
+    - GITLAB_PORT=
+    - GITLAB_SSH_PORT=10022
+    - GITLAB_RELATIVE_URL_ROOT=
+
+    - GITLAB_NOTIFY_ON_BROKEN_BUILDS=true
+    - GITLAB_NOTIFY_PUSHER=false
+
+    - GITLAB_EMAIL=git@gmail.com
+    - GITLAB_EMAIL_REPLY_TO=noreply@gmail.com
+    - GITLAB_INCOMING_EMAIL_ADDRESS=git@gmail.com
+
+    - GITLAB_BACKUPS=daily
+    - GITLAB_BACKUP_TIME=01:00
+
+    - SMTP_ENABLED=true
+    - SMTP_DOMAIN=qq.com
+    - SMTP_HOST=smtp.exmail.qq.com
+    - SMTP_PORT=25
+    - SMTP_USER=git@gmail.com
+    - SMTP_PASS=Git123
+    - SMTP_STARTTLS=true
+    - SMTP_AUTHENTICATION=plain
+
+    - IMAP_ENABLED=false
+    - IMAP_HOST=imap.gmail.com
+    - IMAP_PORT=993
+    - IMAP_USER=mailer@example.com
+    - IMAP_PASS=password
+    - IMAP_SSL=true
+    - IMAP_STARTTLS=false
+  volumes:
+    - /mnt/docker/gitlab/gitlab:/home/git/data
+redis:
+  image: sameersbn/redis:latest
+  volumes:
+    - /mnt/docker/gitlab/redis:/var/lib/redis
