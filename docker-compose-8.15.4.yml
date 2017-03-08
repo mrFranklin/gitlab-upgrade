@@ -1,0 +1,163 @@
+# refrence https://github.com/sameersbn/docker-gitlab/tree/8.15.4
+version: '2'
+
+services:
+  redis:
+    restart: always
+    image: sameersbn/redis:latest
+    command:
+    - --loglevel warning
+    volumes:
+    # modify
+    - /mnt/docker/gitlab/redis:/var/lib/redis:Z
+
+  postgresql:
+    restart: always
+    image: sameersbn/postgresql:9.5-3
+    volumes:
+    # modify
+    - /mnt/docker/gitlab/postgresql:/var/lib/postgresql:Z
+    environment:
+    - DB_USER=git
+    - DB_PASS=password
+    - DB_NAME=gitlabhq_production
+    - DB_EXTENSION=pg_trgm
+
+  gitlab:
+    restart: always
+    image: sameersbn/gitlab:8.15.4
+    depends_on:
+    - redis
+    - postgresql
+    ports:
+    - "10080:80"
+    - "10022:22"
+    volumes:
+    # modify
+    - /mnt/docker/gitlab/gitlab:/home/git/data:Z
+    - /mnt/docker/gitlab/log:/var/log/gitlab
+    environment:
+    - DEBUG=false
+
+    - DB_ADAPTER=postgresql
+    - DB_HOST=postgresql
+    - DB_PORT=5432
+    - DB_USER=git
+    - DB_PASS=password
+    - DB_NAME=gitlabhq_production
+
+    - REDIS_HOST=redis
+    - REDIS_PORT=6379
+
+    # modify
+    - TZ=Asia/Shanghai
+    - GITLAB_TIMEZONE=Beijing
+
+    - GITLAB_HTTPS=false
+    - SSL_SELF_SIGNED=false
+
+    # modify
+    - GITLAB_HOST=your.domain.com
+    - GITLAB_PORT=
+    - GITLAB_SSH_PORT=10022
+    - GITLAB_RELATIVE_URL_ROOT=
+    # modify
+    # GITLAB_SECRETS_OTP_KEY_BASE is used to encrypt 2FA secrets in the database. If you lose or rotate this secret, none of your users will be able to log in using 2FA.
+    # GITLAB_SECRETS_DB_KEY_BASE is used to encrypt CI secret variables, as well as import credentials, in the database. If you lose or rotate this secret, you will not be able to use existing CI secrets.
+    # GITLAB_SECRETS_SECRET_KEY_BASE is used for password reset links, and other 'standard' auth features. If you lose or rotate this secret, password reset tokens in emails will reset.
+    - GITLAB_SECRETS_DB_KEY_BASE=cq4tvjktrcldKTcW4vvXqx5vB57hXlQMNLcKt2GpDZZWV2bJPmZspHq6fdMXdDC3
+    - GITLAB_SECRETS_SECRET_KEY_BASE=cq4tvjktrcldKTcW4vvXqx5vB57hXlQMNLcKt2GpDZZWV2bJPmZspHq6fdMXdDC3
+    - GITLAB_SECRETS_OTP_KEY_BASE=cq4tvjktrcldKTcW4vvXqx5vB57hXlQMNLcKt2GpDZZWV2bJPmZspHq6fdMXdDC3
+
+    - GITLAB_ROOT_PASSWORD=password
+    - GITLAB_ROOT_EMAIL=admin@gmail.com
+
+    - GITLAB_NOTIFY_ON_BROKEN_BUILDS=true
+    - GITLAB_NOTIFY_PUSHER=false
+
+    # modify
+    - GITLAB_EMAIL=git@gmail.com
+    - GITLAB_EMAIL_REPLY_TO=noreply@gmail.com
+    - GITLAB_INCOMING_EMAIL_ADDRESS=git@gmail.com
+
+    - GITLAB_BACKUP_SCHEDULE=daily
+    - GITLAB_BACKUP_TIME=01:00
+
+    # modify
+    - SMTP_ENABLED=true
+    - SMTP_DOMAIN=qq.com
+    - SMTP_HOST=smtp.exmail.qq.com
+    - SMTP_PORT=25
+    - SMTP_USER=git@gmail.com
+    - SMTP_PASS=Git123
+    - SMTP_STARTTLS=true
+    - SMTP_AUTHENTICATION=plain
+
+    - IMAP_ENABLED=false
+    - IMAP_HOST=imap.gmail.com
+    - IMAP_PORT=993
+    - IMAP_USER=mailer@example.com
+    - IMAP_PASS=password
+    - IMAP_SSL=true
+    - IMAP_STARTTLS=false
+
+    - OAUTH_ENABLED=false
+    - OAUTH_AUTO_SIGN_IN_WITH_PROVIDER=
+    - OAUTH_ALLOW_SSO=
+    - OAUTH_BLOCK_AUTO_CREATED_USERS=true
+    - OAUTH_AUTO_LINK_LDAP_USER=false
+    - OAUTH_AUTO_LINK_SAML_USER=false
+    - OAUTH_EXTERNAL_PROVIDERS=
+
+    - OAUTH_CAS3_LABEL=cas3
+    - OAUTH_CAS3_SERVER=
+    - OAUTH_CAS3_DISABLE_SSL_VERIFICATION=false
+    - OAUTH_CAS3_LOGIN_URL=/cas/login
+    - OAUTH_CAS3_VALIDATE_URL=/cas/p3/serviceValidate
+    - OAUTH_CAS3_LOGOUT_URL=/cas/logout
+
+    - OAUTH_GOOGLE_API_KEY=
+    - OAUTH_GOOGLE_APP_SECRET=
+    - OAUTH_GOOGLE_RESTRICT_DOMAIN=
+
+    - OAUTH_FACEBOOK_API_KEY=
+    - OAUTH_FACEBOOK_APP_SECRET=
+
+    - OAUTH_TWITTER_API_KEY=
+    - OAUTH_TWITTER_APP_SECRET=
+
+    - OAUTH_GITHUB_API_KEY=
+    - OAUTH_GITHUB_APP_SECRET=
+    - OAUTH_GITHUB_URL=
+    - OAUTH_GITHUB_VERIFY_SSL=
+
+    - OAUTH_GITLAB_API_KEY=
+    - OAUTH_GITLAB_APP_SECRET=
+
+    - OAUTH_BITBUCKET_API_KEY=
+    - OAUTH_BITBUCKET_APP_SECRET=
+
+    - OAUTH_SAML_ASSERTION_CONSUMER_SERVICE_URL=
+    - OAUTH_SAML_IDP_CERT_FINGERPRINT=
+    - OAUTH_SAML_IDP_SSO_TARGET_URL=
+    - OAUTH_SAML_ISSUER=
+    - OAUTH_SAML_LABEL="Our SAML Provider"
+    - OAUTH_SAML_NAME_IDENTIFIER_FORMAT=urn:oasis:names:tc:SAML:2.0:nameid-format:transient
+    - OAUTH_SAML_GROUPS_ATTRIBUTE=
+    - OAUTH_SAML_EXTERNAL_GROUPS=
+    - OAUTH_SAML_ATTRIBUTE_STATEMENTS_EMAIL=
+    - OAUTH_SAML_ATTRIBUTE_STATEMENTS_NAME=
+    - OAUTH_SAML_ATTRIBUTE_STATEMENTS_FIRST_NAME=
+    - OAUTH_SAML_ATTRIBUTE_STATEMENTS_LAST_NAME=
+
+    - OAUTH_CROWD_SERVER_URL=
+    - OAUTH_CROWD_APP_NAME=
+    - OAUTH_CROWD_APP_PASSWORD=
+
+    - OAUTH_AUTH0_CLIENT_ID=
+    - OAUTH_AUTH0_CLIENT_SECRET=
+    - OAUTH_AUTH0_DOMAIN=
+
+    - OAUTH_AZURE_API_KEY=
+    - OAUTH_AZURE_API_SECRET=
+    - OAUTH_AZURE_TENANT_ID=
